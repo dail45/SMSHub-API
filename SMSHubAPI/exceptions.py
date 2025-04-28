@@ -76,3 +76,7 @@ class TimeoutException(SMSHubAPIException):
 class NoCountryException(SMSHubAPIException):
     def __init__(self, message: str = "No country"):
         super().__init__(message)
+
+class ServerException(SMSHubAPIException):
+    def __init__(self, message: str = "Server error"):
+        super().__init__(message)

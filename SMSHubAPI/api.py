@@ -1,6 +1,6 @@
 import time
 
-from mtrequests import PendingPool, get, PendingResponse
+from mtrequests import PendingPool, get, PendingResponse, PendingRequest
 
 from SMSHubAPI.enums import Currency, Status
 from SMSHubAPI.exceptions import *
@@ -19,7 +19,8 @@ def exception_for_text(rsp: PendingResponse):
         "NO_BALANCE": NoBalanceException,
         "WRONG_SERVICE": WrongServiceException,
         "NO_ACTIVATION": NoActivationException,
-        "CURRENCY_CHANGE_UNAVAILABLE": CurrencyChangeUnavailableException
+        "CURRENCY_CHANGE_UNAVAILABLE": CurrencyChangeUnavailableException,
+        "SERVER_ERROR": ServerException
     }
 
     exception = exception_table.get(rsp.text, None)
@@ -216,8 +217,9 @@ class SMSHubAPI:
     def sms_retry(self) -> str | PendingResponse:
         return self.set_status(Status.sms_repeat)
 
-    def wait_for_sms(self, interval: int = 1, timeout: int = 60) -> str | PendingResponse | None:
+    def wait_for_sms(self, interval: int = 1, timeout: int = 60) -> str | PendingResponse:
         start_time = time.time()
+        rsp: tuple[str, str | None] | PendingResponse | None = None
         while time.time() - start_time < timeout:
             last_time = time.time()
             rsp = self.get_status()
@@ -230,7 +232,7 @@ class SMSHubAPI:
         else:
             if self.raise_for_status:
                 raise TimeoutException()
-            return None
+            return PendingResponse(None, TimeoutException(), rsp.request if isinstance(rsp, PendingResponse) else None)
 
     def sms_cancel(self) -> str | PendingResponse:
         return self.set_status(Status.cancel_activation)

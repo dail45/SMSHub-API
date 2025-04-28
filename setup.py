@@ -8,7 +8,7 @@ def readme():
 
 setup(
     name='Simple-SMSHub-API',
-    version='1.0.0',
+    version='1.1.0',
     author='dail45',
     description='Unofficial API for smshub.org',
     long_description=readme(),
